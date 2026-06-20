@@ -1,0 +1,10 @@
+# Speaker watchlist for scan_flags.py — review prompts, NOT a blocklist and NOT auto-edited.
+# A hit only means "look here and judge against SPEAKER-PROFILE.md" — flag or keep is your call.
+# Lives at the speaker project root (walk-up resolved). Columns:
+#   category<TAB>term-or-regex<TAB>note
+# category = one of the agnostic flag categories (SENSITIVE, ATTRIBUTION, VERSION, …).
+# term = a plain word or a Python regex (case-insensitive). Keep it broad; precision is the
+# editorial pass's job, not the grep's.
+SENSITIVE	\b(race|racial|ethnic|nation(s|al)?)\b	group-reference — check tone of the surrounding aside
+ATTRIBUTION	\b(someone (said|wrote)|a (man|writer) (said|once said)|I read (somewhere|once))\b	vague source — verify or drop the attribution
+VERSION	\bKing James\b|\bKJV\b	confirm version tag + whether the exposition leans on KJV wording

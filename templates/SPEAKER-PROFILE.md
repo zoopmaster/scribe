@@ -20,11 +20,21 @@ Tics that ARE the speaker and must survive faithful revision:
   Signature tells: <e.g. "the whole *counsel* of God" = KJV>.
 - If the speaker cites the alternate, keep and tag it; never silently convert.
 
-## Sensitivity taxonomy (Step 3)
-What this speaker says that needs handling, and how:
-- <Category to reword + flag>: <rule>. → reword in his voice, add `⚑ REWORDED — review wording`.
-- <Category to KEEP as ordinary exposition, do NOT soften>: <rule>.
-- Named figures: famous → KEEP; non-famous → reword + flag.
+## Filters (flag taxonomy) — Step 3
+The agnostic flag categories are fixed by the SKILL: **SENSITIVE, ATTRIBUTION, VERSION, BYLINE,
+TRUNCATION, GRAPHIC, WORDING**. This table tells the editorial pass how THIS speaker's content
+maps onto them — the action per trigger. `scan_flags.py` greps `flag-terms.tsv` to surface
+SENSITIVE/ATTRIBUTION candidates; you judge each here and raise the flag in the proof-checklist.
+
+| Category  | Trigger (what fires it)                         | Action |
+|-----------|--------------------------------------------------|--------|
+| SENSITIVE | <e.g. charged racial/ethnic/national-group aside> | reword in his voice (keep the point), `⚑ REWORDED — review wording` |
+| SENSITIVE | <doctrinal / theological position>               | KEEP as ordinary exposition — no flag, do NOT soften |
+| SENSITIVE | named figure                                     | famous → KEEP; non-famous → reword + flag |
+| ATTRIBUTION | source/quote that can't be verified            | drop name + footnote, keep his wording, flag |
+| VERSION   | quote leans on alternate-version wording          | switch + tag `(…, <alt>)`, flag the call |
+
+Anything NOT covered here defaults to KEEP — do not invent new sensitivities.
 
 ## Proper-noun seed
 The base list for the whisper prompt (each series adds its own); the names Whisper mishears:

@@ -9,12 +9,14 @@ Give it a SermonAudio URL (or a local audio file) plus the speaker and series na
 2. **Revises** the transcript faithfully in the speaker's own voice (a medium dial — smooths
    for a reader, keeps the rhetoric).
 3. **Bookifies** it — strips oral deixis, converts handout references into figure pointers,
-   derives headings from the speaker's own numbered points.
+   derives headings from the speaker's own numbered points, and **flags** sensitive/uncertain
+   material for review (see below).
 4. **Cites Scripture** — verifies every quotation against the speaker's default Bible version,
    switches versions where his exposition leans on specific wording.
 5. **Marks spoken emphasis** — detects acoustic prominence from the word timestamps and
    italicizes the prose peaks.
-6. **Renders** one styled, book-like HTML deliverable.
+6. **Finalizes** to one **Markdown** deliverable (`…-BOOK-final.md`) with a Scripture-permissions
+   footer for the versions used. (An HTML preview is available but optional.)
 
 The engine and the skill are **generic**. Everything speaker- or series-specific lives in the
 *data* project beside the audio — never in this plugin.
@@ -53,6 +55,18 @@ Hand the skill the audio plus the speaker and series name — it does the setup 
 - **New series** → creates the series folder with its `series.config` and seeds `SERIES-DECISIONS.md`.
 - **Existing speaker/series** → reads the config + ledgers and continues.
 
+## Flags & permissions
+
+Sensitive or uncertain material runs through an agnostic **flag process**. The categories are
+fixed (`SENSITIVE`, `ATTRIBUTION`, `VERSION`, `BYLINE`, `TRUNCATION`, `GRAPHIC`, `WORDING`); the
+triggers and the reword/keep decision for a given speaker come from that speaker's profile. A
+non-destructive watchlist (`flag-terms.tsv` + `scan_flags.py`) surfaces candidates for the
+editorial pass to judge; raised flags go into the screen-only proof-checklist and a durable
+per-sermon `FLAGS.md`, and `lint_series.py` fails any flag marker that leaks into the body.
+
+Bible-copyright notices are appended automatically at finalize, keyed by version
+(`bible_permissions.py`, override per speaker via `bible-permissions.tsv`).
+
 The single deliverable per sermon is the emphasized book view, `…-BOOK-emph.html`. A PostToolUse
 hook rebuilds it whenever you edit the curated `…-BOOK-emph.md` (it never re-runs the emphasis
 detector, which would clobber hand curation).
@@ -65,7 +79,8 @@ scribe/
   skills/scribe/    SKILL.md — the method (the editorial judgment you perform)
   scripts/          the engine — speaker-agnostic, config-driven
   hooks/            on_book_edit.sh + hooks.json (rebuild HTML on edit)
-  templates/        speaker.config, SPEAKER-PROFILE.md, series.config, sections.tsv
+  templates/        speaker.config, SPEAKER-PROFILE.md, series.config, sections.tsv,
+                    FLAGS.md, flag-terms.tsv
 ```
 
 ### The engine
@@ -75,11 +90,14 @@ scribe/
 | `series_config.py` | layered config resolver (`speaker.config` over `series.config`) |
 | `transcribe.sh` / `transcribe_local.sh` | mlx-whisper transcription (URL or local file) with repetition-collapse guard |
 | `apply_emphasis.py` | acoustic-prominence emphasis detector → curated `…-BOOK-emph.md` |
-| `build_html.py` | render one chapter to the styled book-view HTML |
+| `scan_flags.py` | grep the speaker's `flag-terms.tsv` watchlist → flag candidates (non-destructive) |
+| `finalize.py` | strip screen-only blocks + append permissions → `…-BOOK-final.md` (the deliverable) |
+| `bible_permissions.py` | canonical Bible-version copyright notices |
+| `build_html.py` | optional styled HTML preview of a chapter |
 | `build_index.py` | series contents page (optional grouping via `sections.tsv`) |
 | `build_book.py` / `build_book_pdf.sh` | combined review HTML → PDF |
 | `smartquotes.py` | straight → curly typographic quotes, in place |
-| `lint_series.py` | front-matter + cross-chapter consistency lint |
+| `lint_series.py` | front-matter + cross-chapter consistency lint (+ flag-leak check) |
 
 ## A speaker project (the consumer)
 

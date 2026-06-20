@@ -119,12 +119,9 @@ styling. Put the detailed build spec in `CORRECTIONS-LOG.md`. Never prose-ify aw
 description or silently drop a referenced graphic. **If a later chapter re-references a graphic
 introduced earlier**, REUSE the same placeholder file + caption rather than minting a new one,
 and report the reuse. Convert series talk to chapter talk.
-**Sensitive material — the keep/flag taxonomy is speaker-tuned; read the speaker's
-`SPEAKER-PROFILE.md`** (and any series-local override in `SERIES-DECISIONS.md`). Apply its
-rules: reword + reintegrate flagged categories in his voice (keep his point) and add a
-`⚑ REWORDED — review wording` item — `⚑` lives in the `<!-- proof-checklist -->` block ONLY,
-NEVER inline in the body. Keep-as-exposition categories stay, no flag, do NOT soften. Named
-figures: a **famous** one → KEEP; a **non-famous** one → reword + flag.
+**Sensitive material — run the flag process below.** The keep/reword decision is speaker-tuned;
+read the speaker's `SPEAKER-PROFILE.md` Filters table (and any series-local override in
+`SERIES-DECISIONS.md`).
 Derive H2/H3 **headings from his own numbered points** ("first major point… secondly… now
 finally") — never a generic template. **Byline = his actual recorded Scripture reading**
 ("on <Book c:v>") whenever one is captured — the text he reads out to open the sermon; only
@@ -135,6 +132,28 @@ starts mid-stream** and no opening prayer was captured, use only the closing epi
 fabricate an opening one. **If the recording cuts off mid-closing-prayer,** complete only an
 unmistakable liturgical/covenant closure (e.g. "…for us, and for our children. Amen.") and flag
 it — never invent beyond the obvious.
+
+## Flag process (agnostic filters; speaker rules)
+Flags are the audit trail of every editorial call a human should review. The **categories are
+fixed and speaker-agnostic**; the **triggers/actions for SENSITIVE come from the speaker's
+profile** — so the same process serves every speaker.
+- **Categories:** `SENSITIVE` (reworded charged material) · `ATTRIBUTION` (unverifiable source) ·
+  `VERSION` (non-default Bible version call) · `BYLINE` (byline ≠ recorded reading) ·
+  `TRUNCATION` (completed a cut-off prayer/sentence) · `GRAPHIC` (referenced handout/figure) ·
+  `WORDING` (reworded passage needing a look). Anything not covered defaults to KEEP — don't
+  invent new sensitivities.
+- **Surface candidates (non-destructive):** run `$SCRIBE/scripts/scan_flags.py <NN-slug>` — it
+  greps the speaker's `flag-terms.tsv` watchlist against the draft and lists hits with line
+  numbers. A hit is a *prompt to judge*, never an auto-edit. Judge each against the profile's
+  Filters table: reword + flag, keep, or cut + flag.
+- **Raise a flag** by adding one line to the `<!-- proof-checklist -->` block (Step 7) —
+  `- **<CATEGORY>:** <what> — <decision>`. The `⚑` marker, when used, lives in that block ONLY,
+  **NEVER inline in the body** (lint FAILs on an inline `⚑`).
+- **Record durably** in the sermon's `FLAGS.md` (from `$SCRIBE/templates/FLAGS.md`): the
+  proof-checklist is screen-only and is deleted at sign-off, so `FLAGS.md` is the surviving
+  record. The same items go in your report back to the user.
+- **Resolve:** the user reviews; at sign-off the proof-checklist block is deleted from the
+  deliverable and the `FLAGS.md` rows are marked resolved.
 
 ## Step 4 — Scripture & citations
 - **Verify every quotation** against the speaker's default version: `<bible_url_base>/<book>/<ch>.htm`
@@ -162,6 +181,10 @@ it — never invent beyond the obvious.
   the speaker's first-person voice: never write third-person editorial notes, and never footnote
   an aside.
 - Record verified quotes, divergences, and small-caps (OT-in-NT) spots in `SCRIPTURE-VERIFICATION.md`.
+- **Permissions footer** — you do NOT hand-write Bible copyright text. `finalize.py` (Step 6)
+  appends the canonical notice for the default version plus any cited alternate, from
+  `bible_permissions.py` (override per speaker with a `bible-permissions.tsv`). Verify the notice
+  against the publisher's current wording before sending to print.
 
 ## Step 5 — Emphasis (script)
 ```
@@ -175,23 +198,27 @@ half you prune) and is BLIND to reverent-hush emphasis — add those by ear (the
 speaker's hush patterns). The curated `…-BOOK-emph.md` is the **source of truth** for the render;
 re-running this script OVERWRITES your curation, so run it once up front, then prune by hand.
 
-## Step 6 — Render (script)
+## Step 6 — Finalize (script) — the deliverable is Markdown
+The deliverable is **`…-BOOK-final.md`** (Markdown — emphasis as `*italics*`, scripture as
+blockquotes, `[^footnotes]`, `![figures]()`, all portable to any md reader/typesetter).
 ```
-$SCRIBE/scripts/build_html.py <…-BOOK-emph.md> <…-BOOK-emph.html>   # the ONE deliverable (book view)
+$SCRIBE/scripts/finalize.py  <…-BOOK-emph.md>                  # -> …-BOOK-final.md (THE deliverable)
+$SCRIBE/scripts/build_html.py <…-BOOK-emph.md> <…-emph.html>   # optional HTML preview only
+$SCRIBE/scripts/smartquotes.py <file.md>                       # straight -> curly, in place
 ```
-**One HTML only** — the emphasized book view. (`--review` makes a tinted copy if you want one
-while editing; it is NOT a deliverable, and neither is a non-emph `…-BOOK.html`.) Smart quotes:
-`$SCRIBE/scripts/smartquotes.py <file.md>`. The PostToolUse hook rebuilds `…-BOOK-emph.html`
-when you edit `…-BOOK-emph.md`; it does NOT re-run apply_emphasis (that would clobber curation)
-and builds no review/base HTML.
+`finalize.py` is the **sign-off** action: it strips the screen-only proof-checklist + comment
+triggers and appends the Scripture-permissions footer, then writes `…-BOOK-final.md`. The
+curated `…-BOOK-emph.md` stays the editable source of truth. The PostToolUse hook rebuilds the
+HTML **preview** when you edit `…-BOOK-emph.md`; it does NOT re-run apply_emphasis (would clobber
+curation) and does NOT finalize (finalize deletes the checklist — a deliberate sign-off step).
 
 ## Step 7 — Proofing checklist (in the render, screen-only)
 Put the **same substantive Steps 2–4 calls you report back** into a `<!-- proof-checklist … -->`
-block at the **very top of `…-BOOK-emph.md`**, above the `# ` title. `build_html.py` renders it
-as a subtle **static to-check list** at the top of the article — a *bullet* list, NOT interactive
-checkboxes. It is `@media print`-hidden, so it can never reach the final book, and it is
-**deleted from the `.md` at sign-off**. Each `- ` line is one item; lead each with a **bold tag**
-for the call (e.g. name/version/byline/graphic/truncation/wording decision).
+block at the **very top of `…-BOOK-emph.md`**, above the `# ` title. The HTML preview renders it
+as a subtle **static to-check list** — a *bullet* list, NOT interactive checkboxes. `finalize.py`
+**strips it from the deliverable** at sign-off (and it never reaches the final book). Each `- `
+line is one flag item carrying a **bold CATEGORY tag** (see the Flag process); these are the same
+items that go in `FLAGS.md` and your report back.
 ```
 <!-- proof-checklist
 - **Byline:** used X; his recorded reading was Y. Decide.
@@ -227,6 +254,8 @@ Without this shared precedent, parallel agents re-derive judgment independently 
 it, parallel ≈ serial. (If no such files exist yet, distill them from the finished chapters first.)
 
 ## Deliverables per sermon
-`…-BOOK.md` (source), `…-BOOK-emph.md` (curated) + `…-BOOK-emph.html` (the one render),
-`audio.*`, `emphasis_full/audio.json`, `CORRECTIONS-LOG.md`, `SCRIPTURE-VERIFICATION.md`.
+`…-BOOK-final.md` (**the deliverable** — finalized Markdown with permissions footer),
+`…-BOOK.md` (source), `…-BOOK-emph.md` (curated source of truth), `FLAGS.md` (durable flag
+record), `audio.*`, `emphasis_full/audio.json`, `CORRECTIONS-LOG.md`,
+`SCRIPTURE-VERIFICATION.md`. (`…-emph.html` is an optional preview, not a deliverable.)
 Commit them. Run `$SCRIBE/scripts/lint_series.py` clean first.

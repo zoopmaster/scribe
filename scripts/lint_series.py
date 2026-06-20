@@ -49,6 +49,10 @@ def lint_chapter(path, cfg):
     if "<!-- proof-checklist" not in text:
         warns.append("no proof-checklist block (ok only if signed off)")
 
+    # --- flag discipline: ⚑ lives ONLY in the proof-checklist block, never in the body ---
+    if "⚑" in prose:
+        fails.append("flag marker ⚑ in body — flags belong in the proof-checklist block only")
+
     # --- smart quotes (book prose only) ---
     if '"' in prose:
         warns.append(f'{prose.count(chr(34))} straight double-quote(s) — run smartquotes.py')
