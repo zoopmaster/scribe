@@ -1,3 +1,7 @@
 __pycache__/
 *.pyc
 .DS_Store
+# local-only compound-engineering knowledge (not shipped to plugin consumers)
+/CLAUDE.md
+/CONCEPTS.md
+/docs/solutions/
