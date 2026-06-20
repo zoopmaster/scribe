@@ -16,6 +16,5 @@
   ],
   "skills": [
     "./skills/scribe"
-  ],
-  "hooks": "./hooks/hooks.json"
+  ]
 }
