@@ -1,0 +1,6 @@
+# Optional contents grouping for build_index.py. One TAB-separated line per section:
+#   lo<TAB>hi<TAB>Section name        (inclusive chapter-number ranges)
+# Chapters not covered by any section are still listed under "Other" — nothing is dropped.
+# Delete this file for a single flat contents list.
+1	3	First section name
+4	9	Second section name

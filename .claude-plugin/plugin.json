@@ -1,0 +1,21 @@
+{
+  "name": "scribe",
+  "description": "Turn a sermon or theological lecture (SermonAudio URL or local audio, optionally with companion notes) into a finished, typeset book-edition chapter — transcribe, revise in the speaker's voice, bookify, cite Scripture, mark spoken emphasis, and render styled HTML. Speaker- and series-agnostic; driven by a per-speaker profile.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Kyle Shepherd"
+  },
+  "license": "MIT",
+  "keywords": [
+    "sermon",
+    "transcription",
+    "whisper",
+    "typesetting",
+    "theology",
+    "book-edition"
+  ],
+  "skills": [
+    "./skills/scribe"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
