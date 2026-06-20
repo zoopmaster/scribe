@@ -1,4 +1,4 @@
-# scribe
+# Scribe
 
 A speaker-agnostic pipeline that turns a **sermon or theological lecture** into a finished,
 typeset **book-edition chapter** — installable as a Claude Code plugin.
