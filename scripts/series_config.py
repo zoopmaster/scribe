@@ -28,6 +28,8 @@ DEFAULTS = {
     "bible_version": "",    # default version label, e.g. "NASB 1977"
     "bible_url_base": "",   # lookup base for verification, e.g. "https://biblehub.com/nasb77"
     "alt_version": "",      # alternate version to switch to, e.g. "KJV"
+    "preview": "ask",       # ask | yes | no — build the optional HTML preview?
+    "keep": "ask",          # ask | final | final+html | all — what to retain after finalize
 }
 
 

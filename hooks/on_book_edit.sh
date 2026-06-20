@@ -33,11 +33,12 @@ cd "$dir" || exit 0
 
 python3 "$SCR/smartquotes.py" "$fp" >/dev/null 2>&1 || true
 
-# Single deliverable = the emphasized book view. Rebuild it only when the curated
-# -BOOK-emph.md is edited. Editing the -BOOK.md source smart-quotes it but does NOT
-# rebuild HTML and does NOT re-run apply_emphasis (that would overwrite hand curation).
+# HTML is an OPTIONAL preview, never assumed: only REFRESH a preview that already exists.
+# If the editor never generated a preview for this chapter, the hook makes none. Editing the
+# -BOOK.md source smart-quotes it but does NOT rebuild HTML and does NOT re-run apply_emphasis.
 case "$fp" in
   *-BOOK-emph.md)
-    python3 "$SCR/build_html.py" "$fp" "$base.html" >/dev/null 2>&1 || true ;;
+    [ -f "$base.html" ] && python3 "$SCR/build_html.py" "$fp" "$base.html" >/dev/null 2>&1
+    : ;;
 esac
 exit 0

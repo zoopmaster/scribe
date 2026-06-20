@@ -208,9 +208,12 @@ $SCRIBE/scripts/smartquotes.py <file.md>                       # straight -> cur
 ```
 `finalize.py` is the **sign-off** action: it strips the screen-only proof-checklist + comment
 triggers and appends the Scripture-permissions footer, then writes `…-BOOK-final.md`. The
-curated `…-BOOK-emph.md` stays the editable source of truth. The PostToolUse hook rebuilds the
-HTML **preview** when you edit `…-BOOK-emph.md`; it does NOT re-run apply_emphasis (would clobber
-curation) and does NOT finalize (finalize deletes the checklist — a deliberate sign-off step).
+curated `…-BOOK-emph.md` stays the editable source of truth.
+**The HTML preview is opt-in — never assume it.** Check the `preview` config: `yes` → build it;
+`no` → skip; `ask`/unset → **ask the user** whether they want a styled HTML preview, and offer to
+save the answer to `speaker.config` (so a batch isn't re-asked). The PostToolUse hook only
+*refreshes a preview that already exists* — it never conjures one — and it never re-runs
+apply_emphasis or finalize.
 
 ## Step 7 — Proofing checklist (in the render, screen-only)
 Put the **same substantive Steps 2–4 calls you report back** into a `<!-- proof-checklist … -->`
@@ -253,9 +256,24 @@ data so every chapter and every parallel wave shares the same precedent:
 Without this shared precedent, parallel agents re-derive judgment independently and drift; with
 it, parallel ≈ serial. (If no such files exist yet, distill them from the finished chapters first.)
 
+## Step 9 — Retain or prune (ask; never assume)
+A finished sermon dir accumulates a lot — audio, transcripts (`audio.{srt,vtt,tsv,json,txt}`),
+the `emphasis_full/` wav + json, `whisper.log`, the intermediate `…-BOOK.md` / `…-BOOK-emph.md`,
+the logs. Most users want only the deliverable. **Do not assume — ask what to keep**, honoring
+the `keep` config: `final` → just `…-BOOK-final.md` (+ figures); `final+html` → also the preview;
+`all` → keep everything; `ask`/unset → **ask the user** (and offer to save the answer to
+`speaker.config`). Then prune:
+```
+$SCRIBE/scripts/prune_sermon.sh <NN-slug> --keep final,figures --dry-run   # preview the deletion
+$SCRIBE/scripts/prune_sermon.sh <NN-slug> --keep final,figures             # apply
+```
+`--dry-run` first and show the list before deleting. Figures and the `…-BOOK-final.md` are kept
+unless explicitly dropped. **Audio and intermediates are gone after this** — only prune once the
+deliverable is verified (and committed, if the project is under git).
+
 ## Deliverables per sermon
-`…-BOOK-final.md` (**the deliverable** — finalized Markdown with permissions footer),
+After retention, what remains is your chosen keep set. In full: `…-BOOK-final.md` (**the
+deliverable** — finalized Markdown with permissions footer), optional `…-emph.html` preview,
 `…-BOOK.md` (source), `…-BOOK-emph.md` (curated source of truth), `FLAGS.md` (durable flag
-record), `audio.*`, `emphasis_full/audio.json`, `CORRECTIONS-LOG.md`,
-`SCRIPTURE-VERIFICATION.md`. (`…-emph.html` is an optional preview, not a deliverable.)
-Commit them. Run `$SCRIBE/scripts/lint_series.py` clean first.
+record), `audio.*`, `emphasis_full/audio.json`, `CORRECTIONS-LOG.md`, `SCRIPTURE-VERIFICATION.md`.
+Commit before pruning. Run `$SCRIBE/scripts/lint_series.py` clean first.
