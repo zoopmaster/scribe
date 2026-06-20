@@ -78,7 +78,7 @@ scribe/
   .claude-plugin/   plugin.json + marketplace.json
   skills/scribe/    SKILL.md — the method (the editorial judgment you perform)
   scripts/          the engine — speaker-agnostic, config-driven
-  hooks/            on_book_edit.sh + hooks.json (rebuild HTML on edit)
+  hooks/            on_book_edit.sh + hooks.json (refresh an existing HTML preview on edit)
   templates/        speaker.config, SPEAKER-PROFILE.md, series.config, sections.tsv,
                     FLAGS.md, flag-terms.tsv
 ```
@@ -93,7 +93,8 @@ scribe/
 | `scan_flags.py` | grep the speaker's `flag-terms.tsv` watchlist → flag candidates (non-destructive) |
 | `finalize.py` | strip screen-only blocks + append permissions → `…-BOOK-final.md` (the deliverable) |
 | `bible_permissions.py` | canonical Bible-version copyright notices |
-| `build_html.py` | optional styled HTML preview of a chapter |
+| `build_html.py` | optional styled HTML preview of a chapter (opt-in) |
+| `prune_sermon.sh` | keep only chosen artifacts (audio/intermediates removed); `--dry-run` first |
 | `build_index.py` | series contents page (optional grouping via `sections.tsv`) |
 | `build_book.py` / `build_book_pdf.sh` | combined review HTML → PDF |
 | `smartquotes.py` | straight → curly typographic quotes, in place |
