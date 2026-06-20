@@ -55,6 +55,23 @@ Hand the skill the audio plus the speaker and series name — it does the setup 
 - **New series** → creates the series folder with its `series.config` and seeds `SERIES-DECISIONS.md`.
 - **Existing speaker/series** → reads the config + ledgers and continues.
 
+## Output & retention
+
+The deliverable is **one Markdown file**, `…-BOOK-final.md` — emphasis as `*italics*`, scripture
+as blockquotes, `[^footnotes]`, `![figures]()`, all portable to any Markdown reader or
+typesetter. `finalize.py` produces it from the curated source at sign-off and appends the
+Scripture-permissions footer.
+
+Two outputs are **opt-in and never assumed** — the skill asks, and the answer can be saved to
+`speaker.config` so a batch isn't re-asked:
+
+- **HTML preview** (`preview: ask | yes | no`) — a styled, book-like HTML rendering. When on, the
+  edit hook keeps it fresh; when never generated, the hook leaves it alone.
+- **Retention** (`keep: ask | final | final+html | all`) — a finished sermon dir accumulates
+  audio, transcripts, intermediate Markdown, and logs. `prune_sermon.sh` keeps only what you
+  choose (the final md + figures by default) and removes the rest, including the original audio.
+  It always supports `--dry-run`, and the skill previews the deletion list before acting.
+
 ## Flags & permissions
 
 Sensitive or uncertain material runs through an agnostic **flag process**. The categories are
@@ -65,11 +82,8 @@ editorial pass to judge; raised flags go into the screen-only proof-checklist an
 per-sermon `FLAGS.md`, and `lint_series.py` fails any flag marker that leaks into the body.
 
 Bible-copyright notices are appended automatically at finalize, keyed by version
-(`bible_permissions.py`, override per speaker via `bible-permissions.tsv`).
-
-The single deliverable per sermon is the emphasized book view, `…-BOOK-emph.html`. A PostToolUse
-hook rebuilds it whenever you edit the curated `…-BOOK-emph.md` (it never re-runs the emphasis
-detector, which would clobber hand curation).
+(`bible_permissions.py`, override per speaker via `bible-permissions.tsv`). Verify the notice
+against the publisher's current wording before sending a book to print.
 
 ## Layout
 
@@ -110,7 +124,8 @@ scribe/
     series.config             # series_title, numbered, whisper_prompt (+ series nouns)
     SERIES-DECISIONS.md …     # standing rulings / registry / house style (as they accrue)
     sections.tsv              # optional contents grouping for build_index.py
-    NN-slug/                  # one sermon: audio.*, …-BOOK.md, …-BOOK-emph.md, logs
+    NN-slug/                  # one sermon: …-BOOK-final.md (deliverable) + (pre-prune) audio.*,
+                              # …-BOOK.md, …-BOOK-emph.md, FLAGS.md, logs
 ```
 
 Per-series batch runners (e.g. `batch_transcribe_*.sh`) stay in the data project and call this
@@ -118,11 +133,23 @@ plugin's `scripts/` via `${CLAUDE_PLUGIN_ROOT:-$HOME/Projects/scribe}/scripts`.
 
 ## Editing the engine
 
-This repo is the source of truth. After editing, refresh the installed copy:
+This repo is the source of truth; the installed plugin is a cached copy. After editing, refresh
+the cache. Bump the `version` in `.claude-plugin/plugin.json` + `marketplace.json`, commit, then:
 
 ```sh
-claude plugin update scribe
+claude plugin marketplace update scribe     # re-read this local marketplace
+claude plugin update scribe                 # pull the new version
 ```
+
+If a refresh ever reports "not found" (e.g. the version was unchanged), reinstall:
+
+```sh
+claude plugin uninstall scribe@scribe
+claude plugin marketplace update scribe
+claude plugin install scribe@scribe
+```
+
+Restart Claude Code (or reload) so the updated skill and hooks load.
 
 ## Requirements
 
