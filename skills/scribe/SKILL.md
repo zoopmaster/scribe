@@ -178,19 +178,21 @@ profile** — so the same process serves every speaker.
 ## Step 4 — Scripture & citations
 - **Verify every quotation** — don't trust the transcript's or your memory's wording. Use the
   bundled fetcher: `python3 $SCRIBE/scripts/bible_fetch.py <version> <book> <ch> [verses]`
-  (e.g. `bible_fetch.py nasb77 isaiah 40 1-11`, `bible_fetch.py kjv haggai 2 1-9`). It pulls
-  copyrighted versions (nasb77, esv, …) from BibleHub and public-domain ones (kjv, web) from a
-  clean API, handling the poetry layout. Book names lowercase with underscores (`1_corinthians`,
-  `psalms`). Cross-check the default against the alternate.
+  (e.g. `bible_fetch.py <version> john 3 16`, `bible_fetch.py <version> psalms 23`). It pulls
+  copyrighted versions from BibleHub and public-domain ones from a clean API, handling the
+  poetry layout. Book names lowercase with underscores (`1_corinthians`, `psalms`). Use the
+  speaker's `bible_version` / `alt_version` (from config) as the `<version>` slug; cross-check
+  the default against the alternate.
 - **Version rule:** default to `bible_version`; switch a quote to the **alternate (`alt_version`)**
   when his surrounding exposition leans on words specific to it (the profile lists the tells). If
   he cites the alternate, keep it and tag it — never silently convert.
-  - **Two-layer default (context, not just word-tells):** a sermon may deliberately use *two*
-    versions by role — e.g. a formal **reading** in one version and **exposition** in another
-    ("I'll read the KJV so you recognize it in the music… now we'll preach from the NASB"). When
-    he announces this, treat it as a **series-wide layer rule** (record in `SERIES-DECISIONS.md`),
-    render each layer in its stated version, and write a `scripture_note` that states both —
-    don't force one global default and tag the rest.
+  - **Role-based version split (context, not just word-tells):** a speaker may deliberately use
+    *two* versions by role within a sermon — e.g. a formal **reading** in one version and the
+    **exposition** in another. When he announces such a split, render each layer in its stated
+    version rather than forcing one global default and tagging the rest. The *which-versions-for-
+    which-role* decision is speaker/series-specific — record it in `SERIES-DECISIONS.md` and
+    state both layers in the `scripture_note`. (The skill stays version-agnostic; no version
+    names belong here.)
 - **Direct quote** → quotation/blockquote + plain `(Book c:v)`; tag the non-default version as
   `(…, <alt_version>)`. Front matter states the default "unless marked" (the `scripture_note`).
 - **Simulated / dramatized speech — quotation marks, NO citation, NEVER italics.** When he
