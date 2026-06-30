@@ -21,6 +21,13 @@ PARENS_W_YEAR = re.compile(r"\(([^()]*(?:1[6-9]\d{2}|20\d{2})[^()]*)\)")
 def chapters_of(series_root):
     return sorted(glob.glob(str(pathlib.Path(series_root) / "*" / "SERMON-*-BOOK-emph.md")))
 
+# Smart-quote the comparison: the mandatory smartquotes hook curls apostrophes/quotes in the
+# rendered prose, but series.config holds straight chars — so compare insensitive to quote glyph.
+def _nq(s):
+    return (s.replace("’", "'").replace("‘", "'")
+             .replace("“", '"').replace("”", '"'))
+
+
 def lint_chapter(path, cfg):
     fails, warns = [], []
     text = path.read_text(encoding="utf-8")
@@ -30,7 +37,7 @@ def lint_chapter(path, cfg):
     # --- front matter (driven by series.config) ---
     title = cfg.get("series_title", "")
     if title:
-        if f"# {title}" not in lines:
+        if not any(_nq(l) == _nq(f"# {title}") for l in lines):
             fails.append(f'H1 "# {title}" missing (series_title)')
     elif not any(l.startswith("# ") for l in lines):
         fails.append("H1 title line missing")
@@ -40,7 +47,7 @@ def lint_chapter(path, cfg):
     if speaker and not any(re.match(rf"^\*{speaker} · on .+\*$", l) for l in lines):
         fails.append(f'byline *{cfg["speaker"]} · on <ref>* missing/malformed')
     note = cfg.get("scripture_note", "")
-    if note and note not in text:
+    if note and _nq(note) not in _nq(text):
         fails.append("scripture-note line missing or altered")
 
     # --- epigraph + checklist ---

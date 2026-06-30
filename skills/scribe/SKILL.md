@@ -40,9 +40,22 @@ stumble inside a quote) or purely mechanical smoothing — those stay log-only. 
 the durable record; the report is the short list of calls the user actually needs to review.
 
 ## Inputs
-- **Audio (required)** — either a SermonAudio URL *or* a local audio file (mp3/wav).
-  - **URL:** get title/speaker/date from the page's og: tags
-    (`curl -s <url> -H 'User-Agent: Mozilla/5.0' | grep og:`); WebFetch is 403'd.
+- **Audio (required)** — a SermonAudio **series** URL, a single SermonAudio **sermon** URL,
+  *or* a local audio file (mp3/wav).
+  - **Series URL** (`/series/<id>`): the public API is auth-gated, so enumerate from the
+    server-rendered pages — `$SCRIBE/scripts/series_manifest.py <series-url> <series-dir>` does
+    it: it scrapes the embedded `/sermons/<id>` links + each sermon's ld+json (title, preach
+    date, duration), sorts by date, auto-slugifies, and writes `<series-dir>/SERMON-MAP.tsv`
+    (chapter, sermon_id, url, slug, date, title). It won't clobber an existing map (writes
+    `.tsv.new`; `--force` to overwrite). **Hand-tweak the auto-slugs**, then process chapters
+    from the map (pilot one first, then batch — confirm scope).
+  - **Sermon URL:** get title/speaker/date from the page's og: tags
+    (`curl -s <url> -H 'User-Agent: Mozilla/5.0' | grep og:`); WebFetch is 403'd. The page's
+    `application/ld+json` also carries SermonAudio's **own transcript** — save it and use it as
+    an *independent* cross-check for proper nouns / quotes against your mlx run (in practice it
+    caught a spelled-out name and confirmed two place names). It is NOT a substitute for the mlx
+    transcript — no word timestamps, so no emphasis pass — and it can mis-hear what the speaker
+    spells out, so the audio still wins ties.
   - **Local file (the batch case):** `$SCRIBE/scripts/transcribe_local.sh <audio-file> <out-dir>`
     does the whole local-file path (copy → `audio.mp3`, `ffmpeg` → wav, mlx-whisper,
     `cp audio.json emphasis_full/`).
@@ -78,7 +91,7 @@ The shared `scripts/` never change between speakers; only the config + `*-PROFIL
 ## Step 1 — Transcribe (script)
 ```
 $SCRIBE/scripts/transcribe_local.sh <audio-file> <series>/NN-slug   # local mp3 (batch) — mlx large-v3
-$SCRIBE/scripts/transcribe.sh       <url>        <series>/NN-slug   # SermonAudio URL — same engine
+$SCRIBE/scripts/transcribe.sh       <url>        <series>/NN-slug   # URL — downloads, then delegates to transcribe_local.sh (same hardened engine + gate)
 ```
 Engine is **mlx-whisper (Apple GPU) at `mlx-community/whisper-large-v3-mlx`** — ~10x realtime
 on an M3 Max (a 1-hr sermon in ~6 min, word timestamps included). Produces
@@ -89,8 +102,11 @@ For a batch, transcription can run ahead in the background while the editorial p
 (Steps 2–7) pipeline behind it.
 **Transcript trust (batch safety) — confirm BEFORE editing.** Two independent failures, one
 gate each: (a) **engine collapse** — mlx large-v3 can repetition-collapse on a long tape (one
-phrase looped for the rest of it); `transcribe_local.sh` gates this (retry hotter, then flag) —
-trust the transcript only if it passed (no single line ≥25%). (b) **wrong source** — verify the
+phrase looped for the rest of it); **both scripts gate this** (`transcribe.sh` downloads then
+delegates to `transcribe_local.sh`, which sets `--condition-on-previous-text False`, a
+hallucination threshold, and the ≥25%-single-line gate; retry hotter via
+`MLX_WHISPER_TEMPERATURE=0.4`, then flag) — trust the transcript only if it passed (no single
+line ≥25%). (b) **wrong source** — verify the
 audio actually IS the sermon you think it is; a `~90s` probe + filename/title check. Never run
 Steps 2–7 on a transcript that failed either check.
 
@@ -162,6 +178,12 @@ profile** — so the same process serves every speaker.
 - **Version rule:** default to `bible_version`; switch a quote to the **alternate (`alt_version`)**
   when his surrounding exposition leans on words specific to it (the profile lists the tells). If
   he cites the alternate, keep it and tag it — never silently convert.
+  - **Two-layer default (context, not just word-tells):** a sermon may deliberately use *two*
+    versions by role — e.g. a formal **reading** in one version and **exposition** in another
+    ("I'll read the KJV so you recognize it in the music… now we'll preach from the NASB"). When
+    he announces this, treat it as a **series-wide layer rule** (record in `SERIES-DECISIONS.md`),
+    render each layer in its stated version, and write a `scripture_note` that states both —
+    don't force one global default and tag the rest.
 - **Direct quote** → quotation/blockquote + plain `(Book c:v)`; tag the non-default version as
   `(…, <alt_version>)`. Front matter states the default "unless marked" (the `scripture_note`).
 - **Simulated / dramatized speech — quotation marks, NO citation, NEVER italics.** When he
