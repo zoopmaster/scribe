@@ -186,13 +186,6 @@ profile** — so the same process serves every speaker.
 - **Version rule:** default to `bible_version`; switch a quote to the **alternate (`alt_version`)**
   when his surrounding exposition leans on words specific to it (the profile lists the tells). If
   he cites the alternate, keep it and tag it — never silently convert.
-  - **Role-based version split (context, not just word-tells):** a speaker may deliberately use
-    *two* versions by role within a sermon — e.g. a formal **reading** in one version and the
-    **exposition** in another. When he announces such a split, render each layer in its stated
-    version rather than forcing one global default and tagging the rest. The *which-versions-for-
-    which-role* decision is speaker/series-specific — record it in `SERIES-DECISIONS.md` and
-    state both layers in the `scripture_note`. (The skill stays version-agnostic; no version
-    names belong here.)
 - **Direct quote** → quotation/blockquote + plain `(Book c:v)`; tag the non-default version as
   `(…, <alt_version>)`. Front matter states the default "unless marked" (the `scripture_note`).
 - **Simulated / dramatized speech — quotation marks, NO citation, NEVER italics.** When he
