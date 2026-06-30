@@ -31,7 +31,7 @@ BIBLE_API = {"kjv", "web", "webbe", "bbe", "oeb-us", "oeb-cw", "clementine", "al
 
 
 def chapter_api(version, book, ch):
-    ref = f"{book.replace('_', ' ')}+{ch}"
+    ref = f"{book.replace('_', '+')}+{ch}"  # plus-encode spaces; a literal space breaks the URL
     raw = subprocess.run(
         ["curl", "-s", f"https://bible-api.com/{ref}?translation={version}&verse_numbers=false"],
         capture_output=True, text=True).stdout
