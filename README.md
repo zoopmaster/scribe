@@ -53,7 +53,12 @@ Hand the skill the audio plus the speaker and series name — it does the setup 
 - **New speaker** → scaffolds the project root (`speaker.config` + `SPEAKER-PROFILE.md`) from
   `templates/`.
 - **New series** → creates the series folder with its `series.config` and seeds `SERIES-DECISIONS.md`.
+- **A whole series URL** → `series_manifest.py <series-url> <series-dir>` builds a `SERMON-MAP.tsv`
+  chapter list (numbered by preach date) to work through sermon by sermon.
 - **Existing speaker/series** → reads the config + ledgers and continues.
+
+Scripture is verified as you draft: `bible_fetch.py` pulls exact verse text by version so quotations
+are checked against the real text, not the transcript's (or memory's) wording.
 
 ## Output & retention
 
@@ -102,7 +107,9 @@ scribe/
 | Script | Does |
 |--------|------|
 | `series_config.py` | layered config resolver (`speaker.config` over `series.config`) |
-| `transcribe.sh` / `transcribe_local.sh` | mlx-whisper transcription (URL or local file) with repetition-collapse guard |
+| `series_manifest.py` | enumerate a SermonAudio **series** URL → `SERMON-MAP.tsv` (scrapes sermon IDs + `ld+json` metadata, sorts by preach date, auto-slugs; non-clobbering) |
+| `transcribe.sh` / `transcribe_local.sh` | mlx-whisper transcription with a repetition-collapse gate; the URL path downloads, then delegates to the local one, so both share one hardened engine |
+| `bible_fetch.py` | verify a Scripture quotation by version — copyrighted (NASB, ESV, …) from BibleHub, public-domain (KJV, WEB) from a clean API, handling the poetry layout |
 | `apply_emphasis.py` | acoustic-prominence emphasis detector → curated `…-BOOK-emph.md` |
 | `scan_flags.py` | grep the speaker's `flag-terms.tsv` watchlist → flag candidates (non-destructive) |
 | `finalize.py` | strip screen-only blocks + append permissions → `…-BOOK-final.md` (the deliverable) |
@@ -122,6 +129,7 @@ scribe/
   SPEAKER-PROFILE.md          # voice tics, version policy, sensitivity taxonomy, name ledger
   <series>/
     series.config             # series_title, numbered, whisper_prompt (+ series nouns)
+    SERMON-MAP.tsv            # chapter list (series_manifest.py): chapter, id, url, slug, date
     SERIES-DECISIONS.md …     # standing rulings / registry / house style (as they accrue)
     sections.tsv              # optional contents grouping for build_index.py
     NN-slug/                  # one sermon: …-BOOK-final.md (deliverable) + (pre-prune) audio.*,
